@@ -1,9 +1,0 @@
-\babel@toc {spanish}{}
-\contentsline {section}{\numberline {1}Introducción}{2}%
-\contentsline {section}{\numberline {2}Material usado y metodología}{2}%
-\contentsline {subsection}{\numberline {2.1}Apartado \textit {i})}{2}%
-\contentsline {subsection}{\numberline {2.2}Apartado \textit {ii})}{2}%
-\contentsline {section}{\numberline {3}Resultados y conclusiones}{3}%
-\contentsline {subsection}{\numberline {3.1}Apartado \textit {i})}{3}%
-\contentsline {subsection}{\numberline {3.2}Apartado \textit {ii})}{3}%
-\contentsline {section}{\numberline {4}Código}{4}%
