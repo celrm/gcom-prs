@@ -51,12 +51,12 @@ def atrac(x0, f, epsilon=0.001):
     suborb = orb[-m:]
     p = periodo(suborb, epsilon)
     v0 = np.sort(suborb[-p:])
-    return v0
+    return v0,m
 
 
 eps = 0.001  # predefinido el error
 N0 = 200  # nuestra capacidad de cómputo máxima
-N = 50  # sabemos de antemano que nuestro conjunto será menor
+N = 20  # sabemos de antemano que nuestro conjunto será menor
 X0 = 0.2
 
 """ Apartado i) """
@@ -79,21 +79,21 @@ def test_v0(v0, epsilon=0.001):
 
     # Error de x0: en estos casos, todos los valores de x0 dan el mismo resultado
     for x0 in np.arange(epsilon, 1, epsilon):
-        v1 = atrac(x0, logistica, epsilon)
+        v1,_ = atrac(x0, logistica, epsilon)
         if not equals_vectors(v0, v1, epsilon):
             print("X0", x0, "no estable")
 
     # Error de R: mover R hasta que no dé el mismo resultado
     for delta in np.arange(epsilon, 1, epsilon):
         R = r + delta
-        v1 = atrac(X0, logistica, epsilon)
+        v1,_ = atrac(X0, logistica, epsilon)
         if not equals_vectors(v0, v1, epsilon):
             print("R", R, "es distinto (delta=", delta, ")")
             print("\t", v0)
             print("\t", v1)
             break
         R = r - delta
-        v2 = atrac(X0, logistica, epsilon)
+        v2,_ = atrac(X0, logistica, epsilon)
         if not equals_vectors(v0, v2, epsilon):
             print("R", R, "es distinto (delta=", delta, ")")
             print("\t", v0)
@@ -106,15 +106,17 @@ print("-" * 10)
 print("Conjunto atractor a)")
 
 
-R = 3.14
-v0 = atrac(X0, logistica, eps)
+R = 3.141
+v0,m = atrac(X0, logistica, eps)
+print("Pasos M=",m)
 test_v0(v0, eps)
 
 print("-" * 10)
 print("Conjunto atractor b)")
 
-R = 3.5
-v0 = atrac(X0, logistica, eps)
+R = 3.515
+v0,m = atrac(X0, logistica, eps)
+print("Pasos M=",m)
 test_v0(v0, eps)
 
 
@@ -127,21 +129,22 @@ vss = {}
 first = True
 for r in np.arange(3.544, 4, eps):
     R = r
-    v0 = atrac(X0, logistica, eps)
+    v0,m = atrac(X0, logistica, eps)
 
     # Primero, calculo si la cuenca de atracción tiene 8 elementos
     if len(v0) == 8:
         # Y después, si al mover x0 con error epsilon se mantiene el resultado
         test = True
-        v1 = atrac(X0 + eps, logistica, eps)
+        v1,_ = atrac(X0 + eps, logistica, eps)
         if not equals_vectors(v0, v1, eps):
             test = False
-        v1 = atrac(X0 - eps, logistica, eps)
+        v1,_ = atrac(X0 - eps, logistica, eps)
         if equals_vectors(v0, v1, eps):
             rss += [r]
             vss[r] = v0
             print("R", R, "\t", v0)
-    elif first and len(v0) != 8:
+            print("Pasos M=",m) 
+    elif first and len(v0) > 8:
         first = False
         rss += [r]
         vss[r] = v0
@@ -151,7 +154,7 @@ for r in np.arange(3.544, 4, eps):
 
 import matplotlib.pyplot as plt
 
-plt.figure(figsize=(10, 10))
+plt.figure(figsize=(7.5, 10))
 
 for r in rss:
     n = len(vss[r])

@@ -1,5 +1,6 @@
 \documentclass[a4paper]{article}
 \usepackage[spanish,es-lcroman]{babel}
+\spanishdecimal{.}
 \usepackage{amssymb}
 \usepackage{geometry}
 \usepackage{parskip}
@@ -49,11 +50,18 @@
 	
 	\tableofcontents
 	
+	\vfill
+	
+	\begin{figure}[h!]\centering
+		\includegraphics[width=0.5\linewidth]{fracaso}\\[5pt]
+		{La primera gráfica que imprimí al empezar esta práctica.}
+	\end{figure}
+	
 	\newpage
 	
 	\section{Introducción}
 	En esta práctica analizamos la convergencia de un sistema dinámico no lineal. En este caso, la transformación asociada viene dada por la función logística: $f_r(x) = r\cdot x\cdot(1-x)$.
-	Se usa para representar el crecimiento de poblaciones cuando hay competición entre varias especies. 
+	Se usa para representar el crecimiento de poblaciones cuando la capacidad del ambiente es limitada.
 	
 	Esta función es dependiente de un parámetro $r\in\mathbb{R}$, por lo que el sistema cambia de comportamiento al modificar este parámetro. Veremos cómo son las cuencas de atracción para algunos valores de $r$, y cuáles tienen un tamaño determinado.
 	
@@ -75,11 +83,11 @@
 	
 	El conjunto atractor serán los $p$ últimos valores de la subórbita calculada hasta el paso $m$.
 	
-	Calcularemos el intervalo de error del valor de la $r$ tomando valores cercanos a los escogidos y asegurándonos de que el conjunto atractor permanece estable. Es decir, si el conjunto atractor es $V_r(x_0)$, encontraremos el $\delta>0$ tal que, para $0<d<\delta$:
-	\[ \left| V_r(x_0) - V_{r\pm d}(x_0) \right|_\infty < \varepsilon \]
+	Calcularemos el intervalo de error del valor de la $r$ tomando valores cercanos a los escogidos y asegurándonos de que el conjunto atractor permanece estable. Es decir, si el conjunto atractor es $V_r(x_0)$, encontraremos un $\delta>0$ tal que, para $0<d<\delta$,
+	\( \left| V_r(x_0) - V_{r\pm d}(x_0) \right|_\infty < \varepsilon \).
 	
-	Además veremos si cambiando el estado inicial $x_0$ también permanece estable. Encontraremos el $\delta>0$ para el que, si $0<d<\delta$:
-	\[ \left| V_r(x_0) - V_r(x_0\pm d) \right|_\infty < \varepsilon \]
+	Además veremos si cambiando el estado inicial $x_0$ también permanece estable. Encontraremos un $\delta>0$ para el que, si $0<d<\delta$,
+	\( \left| V_r(x_0) - V_r(x_0\pm d) \right|_\infty < \varepsilon \).
 	
 	\subsection{Apartado \textit{ii})}
 		
@@ -102,32 +110,33 @@
 	\section{Resultados y conclusiones}
 	\subsection{Apartado \textit{i})}
 	
-	Tomaremos $r=3.140$ y $r=3.500$.
+	Tomaremos $r=3.141$ y $r=3.515$.
 	
-	Para $r=3.140\pm 0.003$, el conjunto atractor calculado es [0.538, 0.780] $\pm \varepsilon$.
-	Hemos calculado que, para $\delta=0.003$, $r+\delta$ da un conjunto atractor de [0.537, 0.782] $\pm \varepsilon$.
+	Para $r=3.141\pm 0.003$, el conjunto atractor calculado es $[0.538, 0.781]\pm \varepsilon$. Ha usado $m=60$ pasos para que el error cometido estuviera en el margen dado.
+	Hemos calculado que, para $\delta=0.003$, $r+\delta$ da un conjunto atractor de [0.536, 0.782] $\pm \varepsilon$.
 	
-	Para $r=3.500\pm 0.002$, el conjunto atractor calculado es [0.383, 0.501, 0.827, 0.875] $\pm \varepsilon$.
-	Hemos calculado que, para $\delta=0.002$, $r+\delta$ da un conjunto atractor de [0.382, 0.502, 0.827, 0.875] $\pm \varepsilon$.
+	Para $r=3.515\pm 0.002$, el conjunto atractor calculado es $[0.375, 0.509, 0.824, 0.878] \pm \varepsilon$. Ha usado $m=20$ pasos, muchos menos que para el valor anterior.
+	Hemos calculado que, para $\delta=0.002$, $r+\delta$ da un conjunto atractor de $[0.374, 0.511, 0.824, 0.879] \pm \varepsilon$.
 	
 	En ambos casos, la elección de estado inicial $x_0\in(0,1)$ es irrelevante, ya que es suficientemente estable. También hemos comprobado que el mayor $r$ tiene un intervalo de error $\pm\delta$ menor. Por tanto, el conjunto atractor se ve modificado más rápidamente. 
 	
 	Entre ambos puntos escogidos hay al menos un punto de bifurcación, ya que el tamaño de la primera cuenca es 2 y la segunda es de 4.
 	
-	\subsection{Apartado \textit{ii})}\vspace*{-2\bigskipamount}
-	\begin{sidefig}{0.45}
+	\subsection{Apartado \textit{ii})}%\vspace*{-2\bigskipamount}
+	\begin{sidefig}{0.5}
 	
 	Hemos calculado, para $r\in(3.544,3.563)\pm \varepsilon$, que todas sus cuencas de atracción tienen 8 elementos. Además, hemos comprobado que con $x_0=0.200\pm \varepsilon$ sus cuencas de atracción se mantienen estables.\\[\medskipamount]
-	Por ejemplo, para $r=3.550\pm \varepsilon$ se tiene el conjunto [0.355, 0.370, 0.506, 0.540, 0.813, 0.828, 0.882, 0.887] $\pm \varepsilon$. A la derecha se encuentra la gráfica de cada conjunto para cada $r$ calculado.\\[\medskipamount]
-	A partir de $r=3.565\pm \varepsilon$ el conjunto de atracción ya no tiene 8 elementos sino 16, por lo que ha habido un punto de bifurcación. Después, no volvemos a encontrar valores de $r$ con cuencas de atracción de tamaño 8.
+	Por ejemplo, para $r=3.550\pm \varepsilon$ se tiene el conjunto $[0.355, 0.370, 0.506, 0.540,0.813, 0.828, $ $0.882, 0.887]$ $\pm \varepsilon$. A la derecha se encuentra la gráfica de cada conjunto identificado en función de su $r$.\\[\medskipamount]
+	A partir de $r=3.565\pm \varepsilon$ el conjunto de atracción ya no tiene 8 elementos sino 16, por lo que ha habido un punto de bifurcación en $3.564\pm\varepsilon$. Después, no volvemos a encontrar valores de $r$ con cuencas de atracción de tamaño 8.\\[\medskipamount]
+	La bifurcación previa debe estar antes del valor $r=3.544$, ya que en el apartado $i)$ encontramos un conjunto de 4 elementos para $r=3.515$, así que debe haber alguna bifurcación entre ambos.
 	
-	\herefig{0.6}
+	\herefig{0.45}
 	
 	\includegraphics[width=\linewidth]{grafica}
 	
-	\end{sidefig}\vspace*{-\bigskipamount}
+	\end{sidefig}\vspace*{\smallskipamount}
 
-	Con este experimento hemos analizado cómo se comporta el sistema dinámico logístico para algunos valores de su parámetro $r$. Hemos visto algunas de sus características en los intervalos de $(3.1,3.544)$ y $(3.544,4)$, calculando sus conjuntos atractores y midiendo las cotas de error de nuestros cálculos.
+	Con este experimento hemos analizado cómo se comporta el sistema dinámico logístico para algunos valores de su parámetro $r$. Hemos visto algunas de sus características en los intervalos de $(3.1,3.544)$ y $(3.544,4)$, calculando sus conjuntos atractores y midiendo las cotas de error en nuestros cálculos.
 
 %	datos e interpretacion.
 %	para r=3,2 obtenfo esto, para tal obtengo cual
