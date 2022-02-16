@@ -55,6 +55,7 @@ def huffman_tree(distr):
         tree = [code] + tree
     return tree
 
+
 # Dado un árbol de Huffman, devuelve un diccionario letra->código.
 def codif_table(tree):
     codification = {}
@@ -88,15 +89,34 @@ def decodification(tree, code):
     return word
 
 
+# Longitud media: sum( wi |ci| ) con wi la probabilidad normalizada y ci el código de cada letra
+def get_L(distr, codif):
+    return sum(distr.probab * [len(codif[s]) for s in distr.state])
+
+
+# Entropía
+def get_H(distr):
+    return -sum(distr.probab * np.log2(distr.probab))
+
+
 """ Apartado i) """
+print("-" * 10)
 
 distr_eng = distribution_from_file("GCOM2022_pract2_auxiliar_eng.txt")
 tree_eng = huffman_tree(distr_eng)
 codif_eng = codif_table(tree_eng)
+L_eng = get_L(distr_eng, codif_eng)
+H_eng = get_H(distr_eng)
+
+print("Inglés:\t\tH =", H_eng, "≤ L =", L_eng, "< H+1 =", H_eng + 1)
 
 distr_esp = distribution_from_file("GCOM2022_pract2_auxiliar_esp.txt")
 tree_esp = huffman_tree(distr_esp)
 codif_esp = codif_table(tree_esp)
+L_esp = get_L(distr_esp, codif_esp)
+H_esp = get_H(distr_esp)
+
+print("Español:\tH =", H_esp, "≤ L =", L_esp, "< H+1 =", H_esp + 1)
 
 
 """ Apartado ii) """
@@ -117,7 +137,7 @@ result_eng = codification(codif_eng, word)
 result_esp = codification(codif_esp, word)
 
 print("Codificación de la palabra:", word)
-print("En binario (hay", len(all_letters), "letras):\t", len(result_bin), result_bin)
+print("En binario (hay", len(all_letters), "letras):\t", len(word) * size_bin, result_bin)
 print("Huffman inglés:\t\t\t", len(result_eng), result_eng)
 print("Huffman español:\t\t", len(result_esp), result_esp)
 
@@ -126,4 +146,5 @@ print("-" * 10)
 
 code = "10111101101110110111011111"
 word = decodification(tree_eng, code)
+print("Decodificación del código:", code)
 print(word)
