@@ -1,4 +1,47 @@
-\documentclass{article}
+\documentclass[a4paper]{article}
+\usepackage[spanish,es-lcroman]{babel}
+\spanishdecimal{.}
+\usepackage{bm}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mypurple}{rgb}{0.7,0.3,0.7}
+\lstset{
+	language=Python,
+	backgroundcolor=\color{white},
+	frame=none,
+	%
+	basicstyle=\tt,
+	commentstyle=\itshape\color{mygreen},
+	keywordstyle=\color{magenta},
+	identifierstyle=\color{cyan},
+	stringstyle=\color{mypurple},
+	showstringspaces=false,
+	%
+	numbers=none,
+	%	numberstyle=\color{gray},
+	firstnumber = 1,
+	stepnumber=2,
+	tabsize =2,
+	%
+	columns=flexible,
+	breaklines=true
+}
+
+\newenvironment{sidefig}[1]
+{\noindent\begin{minipage}[c]{#1\textwidth}}
+	{\vfill\end{minipage}}
+\newcommand{\herefig}[1]{%
+\end{minipage}
+\hfill
+\noindent\begin{minipage}[c]{#1\textwidth} 
+	\centering\vfill
+}
 
 \author{Celia Rubio Madrigal}
 \title{Práctica 2 - GCOMP}
@@ -7,38 +50,93 @@
 \begin{document}
 	\maketitle
 	
-	Introducción - motivación
-	qué queremos obtener
-	analizar la convergencia de un sistema dinámico no lineal llamado logística que representa especies 2 3 lineas
+	\tableofcontents
 	
-	Material usado
-	datos que nos den, plantilla, escrito en ingles a codificar, etc
-	conjunto de condiciones iniciales parametros etc
-	datos de entrada
-	set de datos
-	condiciones
-	contorno espaciales temporales espaciales fijados
+	\vfill
+	
+	\begin{center}
+	\begin{tikzpicture}[scale=2]\huge
+	\node[rectangle,draw] {abc}
+	child {node[rectangle,draw] {a}}
+	child[dashed] {node[solid,rectangle,draw] {bc}
+		child[solid] {node[solid,rectangle,draw] {b}}
+		child[dashed] {node[solid,rectangle,draw] {c}}};
+	\end{tikzpicture}
+	\end{center}
 	
 	
-	metodologia
-	implementacion del sistema din no lineal mediante iteraciones y deteccion de cotas de error explicar calcular cota de error tomando conjunto de datos candidatos a la cuenca de atraccion menos la cuenca anterior, poner formulita
+	\vfill
+	\newpage
 	
-	resultados y discusion (a veces junto cuando los resultados son pocos)
+	\section{Introducción}
+	En esta práctica queremos obtener un método de codificación y decodificación basado en árboles de Huffman para los lenguajes escritos del Español y del Inglés. 
+	
+	Tendremos en cuenta la probabilidad de cada estado, es decir, la frecuencia de aparición de cada letra en un texto. Así, los estados o letras más frecuentes se codificarán de manera más compacta, produciendo una codificación, en general, más breve. 
+	
+	En concreto, queremos minimizar la media de la longitud del código asociado a cada estado, ponderada por su frecuencia de aparición. A esta cantidad la llamaremos $L(C)$.
+	
+	\section{Material usado y metodología}
+	
+	Como no podemos acceder a la frecuencia absoluta de cada letra en cada idioma, disponemos de dos muestras de texto almacenadas en los archivos ``\verb+GCOM2022_pract2_auxiliar_eng.txt+'' y ``\verb+GCOM2022_pract2_auxiliar_esp.txt+''. Sirven como muestras representativas de las poblaciones totales de los idiomas, y tomaremos la frecuencia de cada estado en dichos textos como estimadores de la frecuencia real.
+	
+	\subsection{Apartado \textit{i})}
+	
+	Vamos a construir los dos árboles de Huffman a partir de las frecuencias de aparición de cada letra en sendos textos muestrales. Una vez obtenidas las frecuencias, mediante la función \verb+distribution_from_file+, usamos un algoritmo voraz en la función \verb+huffman_tree+. Agrupa los dos nodos de menor frecuencia en su suma, y se vuelve a insertar en la lista de nodos pendientes hasta que solo queda uno.
+	
+	Para ayudar en las tareas de decodificación de apartados posteriores, y al estar creando el árbol de abajo hacia arriba, asociaremos a cada nodo el índice de sus dos hijos en el árbol. Además, crearemos un diccionario que asocie cada estado a su codificación con la función \verb+codif_table+.
+	
+	Después comprobaremos que nuestras dos codificaciones cumplen el 1º Teorema de Shannon. La entropía de nuestros sistemas, $H(C)$, es una medida de la cantidad de información contenida en ellos, y se calcula como: $$\sum\limits_{j=1}^N -P_j\log_2 P_j$$ donde $P_j$ es la probabilidad de cada estado del sistema. El teorema dice que
+	la media ponderada de la longitud de los códigos, $L(C)$, cumple: $$H(C) \leq L(C) < H(C)+1$$
+	
+	
+	\subsection{Apartado \textit{ii})}
+	Tras obtener los árboles de codificación, vamos a calcular el código asociado a la secuencia de estados dada por la palabra ``\verb+medieval+'' en ambos idiomas. Además la codificaremos en binario, tomando como alfabeto la unión de todos los caracteres disponibles y asociando un código de longitud fija a cada letra. Así veremos cuál de los códigos es más eficiente en este caso concreto.
+	
+	La función \verb|codification| une las codificaciones de cada estado, que cumplen que ninguna de ellas es prefijo de otra. Eso asegura no tener ambigüedad al decodificarlas después. 
+	
+	\subsection{Apartado \textit{iii})}
+	
+	Por último tenemos un texto codificado que proviene del inglés: ``\verb+10111101101110110111011111+''. Lo decodificaremos con la función \verb|decodification|, que usa las anotaciones previas de nodos hijo en el árbol.
+	
+	Al crear los árboles de codificación, el lenguaje de Python decide resolver los empates en frecuencia de maneras arbitrarias. Para construir el mismo árbol que quien ha codificado el texto, también disponemos de su orden de estados, que impondremos en nuestro código al ordenar. Esta secuencia, en orden creciente, es: ``\verb+TpCmAkq;bfy?WBv’\ n-S,lr.dnIcwgiuaoseth +''.
+	
+	\section{Resultados y conclusiones}\renewcommand*{\arraystretch}{1.5}
+	\subsection{Apartado \textit{i})}
+	A continuación, mostramos para ambos sistemas su medida de entropía, $H(C)$, el valor de la longitud media de su codificación hallada, $L(C)$, y el valor $1+H(C)$ para comprobar que $H(C) \leq L(C) < H(C)+1$. Tomaré un margen de $\varepsilon=0.001$ para englobar errores de computación.
+	
+	\begin{tabular}{c|c|c|c}
+		\bf Sistema $\bm{C}$& \bf Entropía $\bm{H(C)}$& \bf Longitud media $\bm{L(C)}$ & $\bm{1+H(C)}$\\\hline
+		Inglés & 4.117 $\pm0.001$ & 4.158 $\pm0.001$ & 5.117 $\pm0.001$ \\
+		Español & 4.394 $\pm0.001$ & 4.432 $\pm0.001$ & 5.394 $\pm0.001$ \\
+	\end{tabular}
 
-	datos e interpretacion.
-	para r=3,2 obtenfo esto, para tal obtengo cual
+Con esto hemos atestado que el 1º Teorema de Shannon se satisface para nuestros sistemas.
+
+\subsection{Apartado \textit{ii})}
 	
-	interpretable. obtengo que los tiempos de transicicon eran pequeños en comparacion con la computacion... que la estimacion de cota claramente es muy inferior a la diferencia de puntos que estoy obteniendo
+	Para codificar la palabra ``\verb+medieval+'' en binario, se ha considerado un alfabeto de 50 letras, por lo que se codifica del 0 al 49, y se necesitan 6 bits por cada uno. Por tanto, la longitud de su código será $8\cdot6=48$. Mostramos la codificación para el binario, el inglés, y el español.
 	
-	conclusiones (lo mismo...) no hace falta 10 apartados, pero el contenido tiene que estar
+	\begin{tabular}{c|c|l}
+		\bf Sistema & \bf Longitud & \bf Codificación \\\hline
+		Binario & 48 & 010100101000100011010011101000011001110001100111\\
+		Inglés & 50 & 11110101111110110111111000111011110100110101101110\\
+		Español & 38 & 11000101000010110010100001111000110101\\
+	\end{tabular}
+
+	Aquí, el sistema de codificación español es más eficiente que el binario, y que a su vez, el inglés. 
 	
-	graficas visuales. cuantas? el 50 como maximo
+	Hay que destacar que, para otro texto a codificar, podría haber salido un resultado distinto. Por ejemplo, hemos comprobado que la palabra \verb|test| tiene codificaciones de longitud 24, 14 y 15, respectivamente. Una de las causas es que la letra \verb|t| es más común en inglés que en español, y su codificación se reduce de tamaño 4 a 3.
 	
-	criterios graficas vectoriales. memoria en latex jeje si pesan mucho esta bien, si tiene mala resolucion pero se ve no pasa nada
 	
-	el indice no cuenta, anexos tampoco. uno del codigo. y adjuntar el codigo independiente.	
+	\subsection{Apartado \textit{iii})}
 	
-	unir apartados segun sea necesario
-	por ej metodos y datos
+	Por último, la palabra secreta a decodificar es ``\verb|hello|''.
+	
+	Así, con las funciones programadas en esta práctica, somos capaces de codificar y decodificar textos en inglés y en español, haciendo uso del conocimiento de probabilidades que tenemos sobre ambos sistemas, y consiguiendo comprimir la información transmitida en muchos casos.
+	
+	\newpage
+	\section{Código}\label{codigo}
+	
+	\lstinputlisting[language=Python]{p2_rubiomadrigalcelia.py}
 	
 \end{document}
