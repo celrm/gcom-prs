@@ -10,6 +10,7 @@ from scipy.spatial import Voronoi, voronoi_plot_2d
 import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 
+
 """ Apartado i) """
 
 # #############################################################################
@@ -22,35 +23,37 @@ X, labels_true = make_blobs(
 
 # #############################################################################
 # Los clasificamos mediante el algoritmo KMeans
-def plot_silhouette(xs,alg):
+def plot_silhouette(xs, alg):
     ss = []
     for x in xs:
         m = alg(x).fit(X)
         silhouette = metrics.silhouette_score(X, m.labels_)
         k = len(set(m.labels_)) - (1 if -1 in m.labels_ else 0)
-        print("Param. = %0.3f"% x, "\tk =",k,"\ts̄ = %0.3f"% silhouette)
+        print("Param. = %0.3f" % x, "\tk =", k, "\ts̄ = %0.3f" % silhouette)
         ss += [silhouette]
     plt.plot(xs, ss)
     plt.show()
 
-plot_silhouette(range(2,4),lambda x : KMeans(n_clusters=x, random_state=0))
 
+plot_silhouette(range(2, 4), lambda x: KMeans(n_clusters=x, random_state=0))
 kmeans = KMeans(n_clusters=3, random_state=0).fit(X)
-print("Centros: ",kmeans.cluster_centers_)
+print("\nCentros:\n", kmeans.cluster_centers_)
 
-print("-"*10)
+print("-" * 10)
 
 # #############################################################################
 # Representamos el resultado con un plot
 
-def plot_kmeans():
-    vor_regions = Voronoi(kmeans.cluster_centers_)
-    voronoi_plot_2d(vor_regions, show_points=False, show_vertices=False)
+
+def plot_points(alg, core_samples_mask=None):
+    if type(core_samples_mask) is not np.ndarray:
+        core_samples_mask = np.zeros_like(alg.labels_, dtype=bool)
+        core_samples_mask[:] = True
 
     plt.xlim([X[:, 0].min() - 0.5, X[:, 0].max() + 0.5])
     plt.ylim([X[:, 1].min() - 0.5, X[:, 1].max() + 0.5])
 
-    unique_labels = set(kmeans.labels_)
+    unique_labels = set(alg.labels_)
     colors = [plt.cm.Spectral(each) for each in np.linspace(0, 1, len(unique_labels))]
 
     for k, col in zip(unique_labels, colors):
@@ -58,8 +61,9 @@ def plot_kmeans():
             # Black used for noise.
             col = [0, 0, 0, 1]
 
-        class_member_mask = kmeans.labels_ == k
-        xy = X[class_member_mask]
+        class_member_mask = alg.labels_ == k
+
+        xy = X[class_member_mask & core_samples_mask]
         plt.plot(
             xy[:, 0],
             xy[:, 1],
@@ -69,24 +73,61 @@ def plot_kmeans():
             markersize=5,
         )
 
-    plt.plot(kmeans.cluster_centers_[:, 0],kmeans.cluster_centers_[:, 1],'ro', markersize=8)
+        xy = X[class_member_mask & ~core_samples_mask]
+        plt.plot(
+            xy[:, 0],
+            xy[:, 1],
+            "o",
+            markerfacecolor=tuple(col),
+            markeredgecolor="k",
+            markersize=3,
+        )
 
-    plt.title("Fixed number of KMeans clusters: %d" % 3)
+    n_clusters = len(set(alg.labels_)) - (1 if -1 in alg.labels_ else 0)
+    plt.title("Number of clusters: %d" % n_clusters)
 
-plot_kmeans()
+
+vor_regions = Voronoi(kmeans.cluster_centers_)
+voronoi_plot_2d(vor_regions, show_points=False, show_vertices=False)
+
+plot_points(kmeans)
+plt.plot(
+    kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], "ro", markersize=8
+)
 plt.show()
 
+
 """ Apartado ii) """
- 
+
 # #############################################################################
 # Los clasificamos mediante el algoritmo DBSCAN
 
-plot_silhouette(np.arange(0.1,0.4,0.05),lambda x: DBSCAN(eps=x, min_samples=10, metric='euclidean'))
-print("-"*10)
-plot_silhouette(np.arange(0.1,0.4,0.05),lambda x: DBSCAN(eps=x, min_samples=10, metric='manhattan'))
+plot_silhouette(
+    np.arange(0.1, 0.4, 0.02),
+    lambda x: DBSCAN(eps=x, min_samples=10, metric="euclidean"),
+)
+db = DBSCAN(eps=0.28, min_samples=10, metric="euclidean").fit(X)
+core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+core_samples_mask[db.core_sample_indices_] = True
+plot_points(db, core_samples_mask)
+plt.show()
+
+print("-" * 10)
+
+plot_silhouette(
+    np.arange(0.1, 0.4, 0.02),
+    lambda x: DBSCAN(eps=x, min_samples=10, metric="manhattan"),
+)
+db = DBSCAN(eps=0.36, min_samples=10, metric="manhattan").fit(X)
+core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+core_samples_mask[db.core_sample_indices_] = True
+plot_points(db, core_samples_mask)
+plt.show()
+
+print("-" * 10)
+
 
 """ Apartado iii) """
-
 
 # #############################################################################
 # Predicción de elementos para pertenecer a una clase:
@@ -94,6 +135,9 @@ problem = np.array([[0, 0], [0, -1]])
 clases_pred = kmeans.predict(problem)
 print(clases_pred)
 
-plot_kmeans()
-plt.plot(problem[:,0],problem[:,1],'ro', markersize=2)
+vor_regions = Voronoi(kmeans.cluster_centers_)
+voronoi_plot_2d(vor_regions, show_points=False, show_vertices=False)
+
+plot_points(kmeans)
+plt.plot(problem[:, 0], problem[:, 1], "ro", markersize=8)
 plt.show()
