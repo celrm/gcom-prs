@@ -1,14 +1,18 @@
 \documentclass[a4paper]{article}
 \usepackage[spanish,es-lcroman]{babel}
+\usepackage[utf8]{inputenc}
 \spanishdecimal{.}
 \usepackage{bm}
 \usepackage{amssymb}
-\usepackage{geometry}
+\usepackage[margin=0.8in]{geometry}
 \usepackage{parskip}
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{tikz}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{subcaption}
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{mypurple}{rgb}{0.7,0.3,0.7}
 \lstset{
@@ -32,6 +36,42 @@
 	columns=flexible,
 	breaklines=true
 }
+\lstset{
+     literate=%
+         {á}{{\'a}}1
+         {í}{{\'i}}1
+         {é}{{\'e}}1
+         {ý}{{\'y}}1
+         {ú}{{\'u}}1
+         {ó}{{\'o}}1
+         {ě}{{\v{e}}}1
+         {š}{{\v{s}}}1
+         {č}{{\v{c}}}1
+         {ř}{{\v{r}}}1
+         {ž}{{\v{z}}}1
+         {ď}{{\v{d}}}1
+         {ť}{{\v{t}}}1
+         {ň}{{\v{n}}}1
+         {ů}{{\r{u}}}1
+         {Á}{{\'A}}1
+         {Í}{{\'I}}1
+         {É}{{\'E}}1
+         {Ý}{{\'Y}}1
+         {Ú}{{\'U}}1
+         {Ó}{{\'O}}1
+         {Ě}{{\v{E}}}1
+         {Š}{{\v{S}}}1
+         {Č}{{\v{C}}}1
+         {Ř}{{\v{R}}}1
+         {Ž}{{\v{Z}}}1
+         {Ď}{{\v{D}}}1
+         {Ť}{{\v{T}}}1
+         {Ň}{{\v{N}}}1
+         {Ů}{{\r{U}}}1      
+         {s̄}{{\={s}}}1
+         {ñ̄}{{\~{n}}}1
+         {Ñ}{{\~{Ñ}}}1
+}
 
 \newenvironment{sidefig}[1]
 {\noindent\begin{minipage}[c]{#1\textwidth}}
@@ -44,8 +84,8 @@
 }
 
 \author{Celia Rubio Madrigal}
-\title{Práctica 2 - GCOMP}
-\date{23 de febrero de 2022}
+\title{Práctica 3 - GCOMP}
+\date{16 de marzo de 2022}
 
 \begin{document}
 	\maketitle
@@ -55,13 +95,7 @@
 	\vfill
 	
 	\begin{center}
-	\begin{tikzpicture}[scale=2]\huge
-	\node[rectangle,draw] {abc}
-	child {node[rectangle,draw] {a}}
-	child[dashed] {node[solid,rectangle,draw] {bc}
-		child[solid] {node[solid,rectangle,draw] {b}}
-		child[dashed] {node[solid,rectangle,draw] {c}}};
-	\end{tikzpicture}
+			\includegraphics[width=0.66\linewidth]{portada}
 	\end{center}
 	
 	
@@ -69,74 +103,80 @@
 	\newpage
 	
 	\section{Introducción}
-	En esta práctica queremos obtener un método de codificación y decodificación basado en árboles de Huffman para los lenguajes escritos del Español y del Inglés. 
-	
-	Tendremos en cuenta la probabilidad de cada estado, es decir, la frecuencia de aparición de cada letra en un texto. Así, los estados o letras más frecuentes se codificarán de manera más compacta, produciendo una codificación, en general, más breve. 
-	
-	En concreto, queremos minimizar la media de la longitud del código asociado a cada estado, ponderada por su frecuencia de aparición. A esta cantidad la llamaremos $L(C)$.
+	En esta práctica aplicaremos algoritmos de clasificación no supervisada a un sistema dado. Suponemos que los elementos del sistema pueden agruparse en un número desconocido de clases en base a la distancia de sus estados frente a los del resto, y queremos responder las siguientes preguntas:
+		¿Cuántas clases, o clústeres, forman los elementos?
+		¿A qué clúster pertenece cada elemento?
+		¿A qué clúster pertenecería un elemento nuevo?
 	
 	\section{Material usado y metodología}
+	Partimos de un sistema de 1000 elementos con 2 estados cada uno, que generamos mediante la función \verb|make_blobs| a partir de 3 centros predefinidos: $(-0.5, 0.5)$, $(-1, -1)$ y $(1, -1)$.
 	
-	Como no podemos acceder a la frecuencia absoluta de cada letra en cada idioma, disponemos de dos muestras de texto almacenadas en los archivos ``\verb+GCOM2022_pract2_auxiliar_eng.txt+'' y ``\verb+GCOM2022_pract2_auxiliar_esp.txt+''. Sirven como muestras representativas de las poblaciones totales de los idiomas, y tomaremos la frecuencia de cada estado en dichos textos como estimadores de la frecuencia real.
 	
 	\subsection{Apartado \textit{i})}
+	El primer algoritmo para agrupar los elementos del sistema es la clasificación por k-medias. Delimitará como clases las \textit{regiones de Voronoi} de unos puntos (los \textit{centroides}), que se deben determinar iterativamente.
 	
-	Vamos a construir los dos árboles de Huffman a partir de las frecuencias de aparición de cada letra en sendos textos muestrales. Una vez obtenidas las frecuencias, mediante la función \verb+distribution_from_file+, usamos un algoritmo voraz en la función \verb+huffman_tree+. Agrupa los dos nodos de menor frecuencia en su suma, y se vuelve a insertar en la lista de nodos pendientes hasta que solo queda uno.
+	La región de Voronoi de un centroide $c$ será el conjunto de puntos del plano cuyo centroide más próximo sea $c$. Para poder definir la proximidad de los puntos usaremos la métrica euclídea sin ponderar, que es la p-norma con $p=2$ y pesos $w_i=1$: \(d_2(x,y) = \sqrt{\sum_{i=1}^2 |x_i-y_i|^2 }\). Así dividimos el espacio en regiones, y clasificamos los elementos del sistema según en qué región se encuentran sus estados.
 	
-	Para ayudar en las tareas de decodificación de apartados posteriores, y al estar creando el árbol de abajo hacia arriba, asociaremos a cada nodo el índice de sus dos hijos en el árbol. Además, crearemos un diccionario que asocie cada estado a su codificación con la función \verb+codif_table+.
-	
-	Después comprobaremos que nuestras dos codificaciones cumplen el 1º Teorema de Shannon. La entropía de nuestros sistemas, $H(C)$, es una medida de la cantidad de información contenida en ellos, y se calcula como: $$\sum\limits_{j=1}^N -P_j\log_2 P_j$$ donde $P_j$ es la probabilidad de cada estado del sistema. El teorema dice que
-	la media ponderada de la longitud de los códigos, $L(C)$, cumple: $$H(C) \leq L(C) < H(C)+1$$
+	El algoritmo recibe como parámetros el número de centroides $k$ \textemdash igual al de clases\textemdash~ y los puntos del sistema. Mediante la clase \verb|KMeans| de \textit{sklearn}, y su método \verb+fit+, obtenemos en el atributo \verb+labels_+ la clasificación. Para averiguar cuál es el mejor $k$ debemos probar con valores en $[2,15]$ y calcular el coeficiente de Silhouette de cada clasificación. El coeficiente de Silhouette calcula si cada punto está bien clasificado en su clase con respecto a si estuviera en las otras clases. Nos quedaremos con el máximo, y dibujaremos los puntos ya clasificados junto a las fronteras de las regiones de Voronoi a las que pertenecen.
 	
 	
 	\subsection{Apartado \textit{ii})}
-	Tras obtener los árboles de codificación, vamos a calcular el código asociado a la secuencia de estados dada por la palabra ``\verb+medieval+'' en ambos idiomas. Además la codificaremos en binario, tomando como alfabeto la unión de todos los caracteres disponibles y asociando un código de longitud fija a cada letra. Así veremos cuál de los códigos es más eficiente en este caso concreto.
+	El segundo algoritmo de clasificación es DBSCAN, que basa sus agrupamientos en separar regiones de alta densidad de puntos mediante fronteras de baja densidad. Para ello, se toman bolas de un radio, o umbral de distancia, $\varepsilon$, y se van agregando puntos entre sí que son alcanzables mediante esas bolas. Se ha de tomar un límite para el que un elemento forma parte de la frontera de un clúster y no de su interior; será cuando no es alcanzable por otros $n_0=10$ puntos.
 	
-	La función \verb|codification| une las codificaciones de cada estado, que cumplen que ninguna de ellas es prefijo de otra. Eso asegura no tener ambigüedad al decodificarlas después. 
+	El algoritmo recibe los puntos y el parámetro $\varepsilon$. Mediante la clase \verb|DBSCAN| de \textit{sklearn}, y su método \verb+fit+, obtenemos en \verb+labels_+ la clasificación. Para averiguar cuál es el mejor $\varepsilon$ debemos probar con valores en $(0.1,0.4)$ y calcular el coeficiente de Silhouette de cada clasificación, quedándonos de nuevo con el máximo. Las bolas pueden tomarse con distintas métricas. En nuestro caso serán la euclídea y la Manhattan (p-norma con $p=1$).
 	
 	\subsection{Apartado \textit{iii})}
+	Con las celdas de Voronoi del apartado \textit{i}), podemos comprobar a cuáles pertenecerían otros elementos que no forman parte de nuestro sistema. Lo calculamos para $(0,0)$ y $(0,-1)$.
 	
-	Por último tenemos un texto codificado que proviene del inglés: ``\verb+10111101101110110111011111+''. Lo decodificaremos con la función \verb|decodification|, que usa las anotaciones previas de nodos hijo en el árbol.
+	\section{Resultados y conclusiones}
 	
-	Al crear los árboles de codificación, el lenguaje de Python decide resolver los empates en frecuencia de maneras arbitrarias. Para construir el mismo árbol que quien ha codificado el texto, también disponemos de su orden de estados, que impondremos en nuestro código al ordenar. Esta secuencia, en orden creciente, es: ``\verb+TpCmAkq;bfy?WBv’\ n-S,lr.dnIcwgiuaoseth +''.
-	
-	\section{Resultados y conclusiones}\renewcommand*{\arraystretch}{1.5}
 	\subsection{Apartado \textit{i})}
-	A continuación, mostramos para ambos sistemas su medida de entropía, $H(C)$, el valor de la longitud media de su codificación hallada, $L(C)$, y el valor $1+H(C)$ para comprobar que $H(C) \leq L(C) < H(C)+1$. Tomaré un margen de $\varepsilon=0.001$ para englobar errores de computación.
+	Para los distintos valores de $k$, en la figura 1 se encuentran sus valores del coeficiente de Silhouette. El valor máximo es $k=3$ (\={s} $=0.588\pm 0.001$), que representamos en la figura 2. Los centroides resultantes son $(-0.54,0.50)$, $(-0.97,-1.02)$ y $(0.98,-0.98)$ $\pm 0.01$, que son muy cercanos a los tres puntos originales generadores del sistema.
 	
-	\begin{tabular}{c|c|c|c}
-		\bf Sistema $\bm{C}$& \bf Entropía $\bm{H(C)}$& \bf Longitud media $\bm{L(C)}$ & $\bm{1+H(C)}$\\\hline
-		Inglés & 4.117 $\pm0.001$ & 4.158 $\pm0.001$ & 5.117 $\pm0.001$ \\
-		Español & 4.394 $\pm0.001$ & 4.432 $\pm0.001$ & 5.394 $\pm0.001$ \\
-	\end{tabular}
+	\begin{figure}[h!]\centering
+\begin{minipage}{.4\textwidth}\label{fig:1}
+	\includegraphics[width=\linewidth]{Figure_1}
+	\captionof{figure}{Coefs. de Silhouette para KMeans con $k\in[2,15]$.}
+	\end{minipage}\qquad
+\begin{minipage}{.4\textwidth}\label{fig:2}
+	\includegraphics[width=\linewidth]{Figure_2}
+	\captionof{figure}{Mejor clasificación del sistema mediante KMeans.}
+	\end{minipage}
+	\end{figure}
 
-Con esto hemos atestado que el 1º Teorema de Shannon se satisface para nuestros sistemas.
-
-\subsection{Apartado \textit{ii})}
+	\subsection{Apartado \textit{ii})}
+	Para los distintos valores de $\varepsilon$, en la figura 3 se encuentran sus valores del coeficiente de Silhouette para la métrica euclídea (máximo en $\varepsilon=0.280\pm 0.001$, \={s} = 0.467$\pm 0.001$), y en la figura 5 para la Manhattan (máximo en $\varepsilon=0.320\pm 0.001$, \={s} = 0.440$\pm 0.001$). Las gráficas de sus clasificaciones están, respectivamente, en las figuras 4 y 6. 
 	
-	Para codificar la palabra ``\verb+medieval+'' en binario, se ha considerado un alfabeto de 50 letras, por lo que se codifica del 0 al 49, y se necesitan 6 bits por cada uno. Por tanto, la longitud de su código será $8\cdot6=48$. Mostramos la codificación para el binario, el inglés, y el español.
+	\begin{figure}[h!]\centering
+\begin{minipage}{.4\textwidth}\label{fig:3}
+	\includegraphics[width=\linewidth]{Figure_3}
+	\captionof{figure}{Coefs. de Silhouette para DBSCAN euclídeo con $\varepsilon\in(0.1,0.4)$.}
+	\end{minipage}\qquad
+\begin{minipage}{.4\textwidth}\label{fig:4}
+	\includegraphics[width=\linewidth]{Figure_4}
+	\captionof{figure}{Mejor clasificación mediante DBSCAN euclídeo.}
+	\end{minipage}
+	\end{figure}
 	
-	\begin{tabular}{c|c|l}
-		\bf Sistema & \bf Longitud & \bf Codificación \\\hline
-		Binario & 48 & 010100101000100011010011101000011001110001100111\\
-		Inglés & 50 & 11110101111110110111111000111011110100110101101110\\
-		Español & 38 & 11000101000010110010100001111000110101\\
-	\end{tabular}
-
-	Aquí, el sistema de codificación español es más eficiente que el binario, y que a su vez, el inglés. 
+	\begin{figure}[h!]\centering
+\begin{minipage}{.4\textwidth}\label{fig:5}
+	\includegraphics[width=\linewidth]{Figure_5}
+	\captionof{figure}{Coefs. de Silhouette para DBSCAN Manhattan con $\varepsilon\in(0.1,0.4)$.}
+	\end{minipage}\qquad
+\begin{minipage}{.4\textwidth}\label{fig:6}
+	\includegraphics[width=\linewidth]{Figure_6}
+	\captionof{figure}{Mejor clasificación mediante DBSCAN Manhattan.}
+	\end{minipage}
+	\end{figure}
 	
-	Hay que destacar que, para otro texto a codificar, podría haber salido un resultado distinto. Por ejemplo, hemos comprobado que la palabra \verb|test| tiene codificaciones de longitud 24, 14 y 15, respectivamente. Una de las causas es que la letra \verb|t| es más común en inglés que en español, y su codificación se reduce de tamaño 4 a 3.
-	
+	Hay 2 clases en vez de 3, ya que la frontera entre las dos a la izquierda es demasiado densa como para distinguirse mediante este algoritmo. También observamos que con este algoritmo algunos puntos son clasificados directamente como ruido en negro.
 	
 	\subsection{Apartado \textit{iii})}
-	
-	Por último, la palabra secreta a decodificar es ``\verb|hello|''.
-	
-	Así, con las funciones programadas en esta práctica, somos capaces de codificar y decodificar textos en inglés y en español, haciendo uso del conocimiento de probabilidades que tenemos sobre ambos sistemas, y consiguiendo comprimir la información transmitida en muchos casos.
+	Volviendo a mirar la figura 1, un elemento con estado $(0,0)$ queda clasificado en el clúster azul. Sin embargo, $(0,-1)$ queda en la frontera de dos celdas de Voronoi. Por tanto, en algunas ejecuciones del comando \verb+kmeans.predict+ sale el clúster rojo y en otras el amarillo.
 	
 	\newpage
 	\section{Código}\label{codigo}
 	
-	\lstinputlisting[language=Python]{p2_rubiomadrigalcelia.py}
+	\lstinputlisting[language=Python]{p3_rubiomadrigalcelia.py}
 	
 \end{document}
