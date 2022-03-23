@@ -4,9 +4,39 @@ Plantilla
      
 """
 import random
+from turtle import color
 import numpy as np
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString, Point
+from matplotlib import cm
+
+# A class to represent a disjoint set
+class DisjointSet:
+    parent = {}
+    rank = {}
+    def makeSet(self, universe):
+        for i in universe:
+            self.parent[i] = i
+            self.rank[i] = 0
+
+    def Find(self, k):
+        if self.parent[k] != k:
+            self.parent[k] = self.Find(self.parent[k])
+        return self.parent[k]
+
+    def Union(self, a, b):
+        x = self.Find(a)
+        y = self.Find(b)
+
+        if x == y:
+            return
+        if self.rank[x] > self.rank[y]:
+            self.parent[y] = x
+        elif self.rank[x] < self.rank[y]:
+            self.parent[x] = y
+        else:
+            self.parent[x] = y
+            self.rank[y] = self.rank[y] + 1
 
 # ################################ PARTE 1 #####################################
 
@@ -60,7 +90,21 @@ plt.plot(*SegmentA.xy, color="red")
 plt.plot(*SegmentB.xy, color="red")
 plt.show()
 
-#Comprobamos la función "intersects"
+segments = [ LineString([Point(X[s][0], Y[s][0]), Point(X[s][1], Y[s][1])]) for s in range(len(X)) ]
 
-print(SegmentA.intersects(SegmentB))
+ds = DisjointSet()
+ds.makeSet(range(len(X)))
+for i in range(len(X)):
+    for j in range(len(X)):
+        if segments[i].intersects(segments[j]):
+            ds.Union(i,j)
 
+n_comps = len( set([ ds.Find(i) for i in range(len(X)) ]) )
+print(n_comps)
+
+
+colours = cm.rainbow(np.linspace(0, 1, len(X)))
+for i in range(len(X)):
+    plt.plot(*segments[i].xy, color=colours[ds.Find(i)])
+plt.show()
+1
