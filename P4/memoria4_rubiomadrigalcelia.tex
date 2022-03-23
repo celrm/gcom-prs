@@ -1,0 +1,128 @@
+\documentclass[a4paper]{article}
+\usepackage[spanish,es-lcroman]{babel}
+\usepackage[utf8]{inputenc}
+\spanishdecimal{.}
+\usepackage{bm}
+\usepackage{amssymb}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage{subcaption}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mypurple}{rgb}{0.7,0.3,0.7}
+\lstset{
+	language=Python,
+	backgroundcolor=\color{white},
+	frame=none,
+	%
+	basicstyle=\tt,
+	commentstyle=\itshape\color{mygreen},
+	keywordstyle=\color{magenta},
+	identifierstyle=\color{cyan},
+	stringstyle=\color{mypurple},
+	showstringspaces=false,
+	%
+	numbers=none,
+	%	numberstyle=\color{gray},
+	firstnumber = 1,
+	stepnumber=2,
+	tabsize =2,
+	%
+	columns=flexible,
+	breaklines=true
+}
+\lstset{
+     literate=%
+         {á}{{\'a}}1
+         {í}{{\'i}}1
+         {é}{{\'e}}1
+         {ý}{{\'y}}1
+         {ú}{{\'u}}1
+         {ó}{{\'o}}1
+         {ě}{{\v{e}}}1
+         {š}{{\v{s}}}1
+         {č}{{\v{c}}}1
+         {ř}{{\v{r}}}1
+         {ž}{{\v{z}}}1
+         {ď}{{\v{d}}}1
+         {ť}{{\v{t}}}1
+         {ň}{{\v{n}}}1
+         {ů}{{\r{u}}}1
+         {Á}{{\'A}}1
+         {Í}{{\'I}}1
+         {É}{{\'E}}1
+         {Ý}{{\'Y}}1
+         {Ú}{{\'U}}1
+         {Ó}{{\'O}}1
+         {Ě}{{\v{E}}}1
+         {Š}{{\v{S}}}1
+         {Č}{{\v{C}}}1
+         {Ř}{{\v{R}}}1
+         {Ž}{{\v{Z}}}1
+         {Ď}{{\v{D}}}1
+         {Ť}{{\v{T}}}1
+         {Ň}{{\v{N}}}1
+         {Ů}{{\r{U}}}1      
+         {s̄}{{\={s}}}1
+         {ñ̄}{{\~{n}}}1
+         {Ñ}{{\~{Ñ}}}1
+}
+
+\newenvironment{sidefig}[1]
+{\noindent\begin{minipage}[c]{#1\textwidth}}
+	{\vfill\end{minipage}}
+\newcommand{\herefig}[1]{%
+\end{minipage}
+\hfill
+\noindent\begin{minipage}[c]{#1\textwidth} 
+	\centering\vfill
+}
+
+\author{Celia Rubio Madrigal}
+\title{Práctica 4 - GCOMP}
+\date{16 de marzo de 2022}
+
+\begin{document}
+	\maketitle
+	
+	\tableofcontents
+	
+	\vfill
+	
+	\begin{center}
+%			\includegraphics[width=0.66\linewidth]{portada}
+	\end{center}
+	
+	
+	\vfill
+	\newpage
+	
+	\section{Introducción}
+	
+	\section{Material usado y metodología}
+	
+	
+	\subsection{Apartado \textit{i})}
+	
+	
+	\subsection{Apartado \textit{ii})}
+	
+	\section{Resultados y conclusiones}
+	
+	
+	\subsection{Apartado \textit{i})}
+	
+	
+	\subsection{Apartado \textit{ii})}
+	
+	\newpage
+	\section{Código}\label{codigo}
+	
+	\lstinputlisting[language=Python]{p4_rubiomadrigalcelia.py}
+	
+\end{document}
