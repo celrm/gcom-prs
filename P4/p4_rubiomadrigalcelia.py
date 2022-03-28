@@ -49,22 +49,10 @@ f.close()
 
 # Cambio de coordenadas
 
-air21[:, :, :, lons >= 180], air21[:, :, :, lons < 180] = (
-    air21[:, :, :, lons < 180],
-    air21[:, :, :, lons >= 180],
-)
-air22[:, :, :, lons >= 180], air22[:, :, :, lons < 180] = (
-    air22[:, :, :, lons < 180],
-    air22[:, :, :, lons >= 180],
-)
-hgt21[:, :, :, lons >= 180], hgt21[:, :, :, lons < 180] = (
-    hgt21[:, :, :, lons < 180],
-    hgt21[:, :, :, lons >= 180],
-)
-hgt22[:, :, :, lons >= 180], hgt22[:, :, :, lons < 180] = (
-    hgt22[:, :, :, lons < 180],
-    hgt22[:, :, :, lons >= 180],
-)
+air21[:,:,:,lons >= 180], air21[:,:,:,lons < 180] = air21[:,:,:,lons < 180], air21[:,:,:,lons >= 180]
+air22[:,:,:,lons >= 180], air22[:,:,:,lons < 180] = air22[:,:,:,lons < 180], air22[:,:,:,lons >= 180]
+hgt21[:,:,:,lons >= 180], hgt21[:,:,:,lons < 180] = hgt21[:,:,:,lons < 180], hgt21[:,:,:,lons >= 180]
+hgt22[:,:,:,lons >= 180], hgt22[:,:,:,lons < 180] = hgt22[:,:,:,lons < 180], hgt22[:,:,:,lons >= 180]
 
 lons = np.roll(lons, len(lons[lons < 180]))
 lons[lons >= 180] -= 360
@@ -91,12 +79,13 @@ Element_pca0 = pca.fit_transform(Y)
 Element_pca0 = Element_pca0.transpose(1, 0).reshape(n_components, len(lats), len(lons))
 print(pca.explained_variance_ratio_)
 
-fig = plt.figure()
-fig.subplots_adjust(hspace=0.4, wspace=0.4)
+fig, axs = plt.subplots(nrows=1, ncols=4, figsize=(20, 4))
+fig.tight_layout()
+plt.subplots_adjust(top=0.90)
 for i in range(4):
-    ax = fig.add_subplot(2, 2, i + 1)
+    ax = axs[i]
     ax.set_title("PCA-" + str(i), fontsize=15, ha="center")
-    cs = plt.contourf(lons, lats, Element_pca0[i, :, :], cmap=CMAP, levels=LEV)
+    cs = ax.contourf(lons, lats, Element_pca0[i, :, :], cmap=CMAP, levels=LEV)
     fig.colorbar(cs, ax=ax)
 
 plt.savefig("2")
@@ -140,35 +129,39 @@ distancias = [
 ]
 distancias.sort()
 top4 = [d for _, d in distancias[:4]]
-hgt_1 = sum(np.array([hgt_sub[dt_time21==d,:,:,:][0] for d in top4 ]))/4
+print(top4)
+hgt_1 = sum([hgt_sub[dt_time21==d,:,:,:][0] for d in top4 ])/4
 air_1 = sum([air_sub[dt_time21==d,:,:,:][0] for d in top4 ])/4
 
 
-fig = plt.figure()
-fig.subplots_adjust(hspace=0.4, wspace=0.4)
+fig, axs = plt.subplots(nrows=1, ncols=4, figsize=(20, 4))
+fig.tight_layout()
+plt.subplots_adjust(top=0.90)
 
-ax = fig.add_subplot(2, 2, 1)
+ax = axs[0]
 ax.set_title("Observación HGT", fontsize=15, ha="center")
 plotted = hgt_0[level==500.,:,:]
-cs = plt.contourf(lons_sub, lats_sub, plotted[0], cmap=CMAP, levels=LEV)
+cs = ax.contourf(lons_sub, lats_sub, plotted[0], cmap=CMAP, levels=LEV)
 fig.colorbar(cs, ax=ax)
 
-ax = fig.add_subplot(2, 2, 2)
+ax = axs[1]
 ax.set_title("HGT-media", fontsize=15, ha="center")
 plotted = hgt_1[level==500.,:,:]
-cs = plt.contourf(lons_sub, lats_sub, plotted[0], cmap=CMAP, levels=LEV)
+cs = ax.contourf(lons_sub, lats_sub, plotted[0], cmap=CMAP, levels=LEV)
 fig.colorbar(cs, ax=ax)
 
-ax = fig.add_subplot(2, 2, 3)
+ax = axs[2]
 ax.set_title("Observación AIR", fontsize=15, ha="center")
 plotted = air_0[level==1000.,:,:]
-cs = plt.contourf(lons_sub, lats_sub, plotted[0], cmap=CMAP, levels=LEV)
+cs = ax.contourf(lons_sub, lats_sub, plotted[0], cmap=CMAP, levels=LEV)
 fig.colorbar(cs, ax=ax)
 
-ax = fig.add_subplot(2, 2, 4)
+ax = axs[3]
 ax.set_title("AIR-media", fontsize=15, ha="center")
 plotted = air_1[level==1000.,:,:]
 cs = plt.contourf(lons_sub, lats_sub, plotted[0], cmap=CMAP, levels=LEV)
 fig.colorbar(cs, ax=ax)
 
 plt.savefig("3")
+
+print(np.array([abs(a) for a in air_1[level==1000.,:,:] - air_0[level==1000.,:,:]]))
