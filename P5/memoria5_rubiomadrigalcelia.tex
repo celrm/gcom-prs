@@ -106,6 +106,7 @@
 	En esta práctica trabajaremos con un sistema cuyos datos están tomado de la atmósfera terrestre. 
 	
 	Tendremos fijada una malla discreta de longitudes (variable $x$), latitudes ($y$) y niveles de presión ($p$), que no se verá modificada a lo largo del tiempo ($t$). En cada punto de la malla se habrá medido la temperatura ($T$) y la altura geopotencial ($Z$) cada día de año 2021 y parte del 2022.
+	
 	Se ha de observar que, por convenio, la malla no está definida a partir de alturas fijas sino de valores de presión fijos.
 	
 	Con estos datos, primero reduciremos el sistema en su eje temporal mediante un análisis de componentes principales, y después trataremos de predecir la temperatura de un día a partir de sus días análogos en altura geopotencial.
@@ -119,9 +120,8 @@
 	\subsection{Apartado \textit{i})}
 	En el primer apartado, hemos fijado la variable $Z$ en el valor $500hPa$, y la variable $t$ en los 365 días de 2021. Así, tenemos el sistema $S_1 = \{\ a_d,\ \{Z_{x,y,p}\}_{x=1, \hspace{8pt} y=1, \hspace{4pt} p=1}^{x=144,y=73,p=17}\ \}\ \}_{d=1}^{d=365}$.
 	
-	Sobre el sistema hemos aplicado el algoritmo PCA. Consiste en encontrar la matriz de covarianzas entre sus elementos, que se descompone espectralmente para quedarnos solamente con los $N=4$ vectores propios con mayor autovalor asociado. Al recomponer la matriz original, nos habremos quedado con una reducción del espacio de elementos.
-
-	Lo hemos aplicado a través de la clase \verb+sklearn.decomposition.PCA+. La plantilla facilitada por el profesor proporciona dos posibles opciones para calcularlas, y debemos escoger la opción correcta.
+	A partir de él hemos estimado sus 4 componentes principales; es decir, ...%TODO. 
+	Se realiza a través de la clase \verb+sklearn.decomposition.PCA+. La plantilla facilitada por el profesor proporciona dos posibles opciones para calcularlas, y debemos escoger la opción correcta.
 	
 	
 	\subsection{Apartado \textit{ii})}
@@ -129,7 +129,7 @@
 	
 	Para el elemento del sistema $a_d$ con $d=``11/01/2022"$, hemos calculado los 4 elementos más análogos a él respecto a su variable $Z$. Hallamos la distancia mínima entre él y cada elemento del año 2021 usando la métrica euclídea ponderada. Los pesos distintos de 1 corresponden a la variable presión: si $p_k=500hPa$ o $p_k=1000hPa$ entonces $w_k = 0.5$, y, para el resto, $w_k=0$.
 	
-	Hemos creado un nuevo elemento $a_d'$ cuyos estados son la media de los estados de esos 4 elementos, tanto para su variable $Z$ como para su variable $T$, y los hemos comparado con los de $a_d$. Habremos predicho la temperatura del elemento original solo a partir de su altura; así podremos calcular el error absoluto medio cometido de, por ejemplo, los puntos de la malla con $p=1000hPa$.
+	Hemos creado un nuevo elemento $a_d'$ cuyos estados son la media de los estados de esos 4 elementos, tanto para su variable $Z$ como para su variable $T$, y los hemos comparado con los de $a_d$. A partir de su altura, hemos predicho la temperatura del elemento original, y así calculamos el error absoluto medio cometido de, por ejemplo, los puntos de la malla con $p=1000hPa$.
 	
 	\section{Resultados y conclusiones}
 	\subsection{Apartado \textit{i})}
@@ -138,7 +138,7 @@
 	
 	Los ratios de varianza explicada obtenidos son [0.888, 0.052, 0.005, 0.004] $\pm0.001$, cuya suma es 0.949 $\pm0.001$. Así, el porcentaje de varianza explicada es 94.5\%, una cifra considerable. Quiere decir que hemos conseguido reducir un sistema con 365 elementos en uno con 4, de forma que somos capaces de explicar el 94.5\% de la varianza de los estados originales mediante los reducidos.
 	
-	A continuación se muestran las gráficas de esta nueva descomposición de los elementos.
+	A continuación se muestran las gráficas de los 4 nuevos elementos obtenidos.
 		
 	\includegraphics[width=\linewidth]{2}
 	
@@ -147,7 +147,7 @@
 	Para los valores de altura geopotencial $Z$ de la malla del subsistema $S_2$ en el día $d$, y usando la distancia definida anteriormente, se han obtenido las 4 fechas más parecidas a ésta en 2021:
 	23 de marzo, 16 de enero, 12 de enero y 16 de marzo.
 	
-	Con los valores de los estados de estos 4 elementos hemos calculado su media aritmética. A continuación se muestran, respectivamente, las gráficas de los valores reales de $Z$ ($p=500hPa$), la media de los valores de $Z$ más análogos, los valores reales de temperatura $T$ ($p=1000hPa$) y sus valores predichos a partir del elemento calculado.
+	Con los valores de los estados de estos 4 elementos hemos calculado su media aritmética. A continuación se muestran, respectivamente, las gráficas de los valores reales de $Z$ ($p=500hPa$), la media de los valores más análogos, los valores reales de temperatura $T$ ($p=1000hPa$) y sus valores predichos a partir del elemento calculado.
 	
 	\includegraphics[width=\linewidth]{3}
 	
