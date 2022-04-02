@@ -1,167 +1,90 @@
-# -*- coding: utf-8 -*-
-"""
-Referencias:
-    
-    Fuente primaria del reanálisis
-    https://psl.noaa.gov/data/gridded/data.ncep.reanalysis2.pressure.html
-    
-    Altura geopotencial en niveles de presión
-    https://psl.noaa.gov/cgi-bin/db_search/DBListFiles.pl?did=59&tid=97457&vid=1498
-    
-    Temperatura en niveles de presión:
-    https://psl.noaa.gov/cgi-bin/db_search/DBListFiles.pl?did=59&tid=97457&vid=4237
-
-    Temperatura en niveles de superficie:
-    https://psl.noaa.gov/cgi-bin/db_search/DBListFiles.pl?did=59&tid=97457&vid=1497
-    
-"""
-
-import math
-import datetime as dt  # Python standard library datetime  module
+import os
 import numpy as np
 import matplotlib.pyplot as plt
-from netCDF4 import Dataset
-from sklearn.decomposition import PCA
+from mpl_toolkits.mplot3d import axes3d
+import math
 
-LEV = 30
-CMAP = "jet"
+""" Apartado 1 """
 
+u = np.linspace(0, np.pi, 25)
+v = np.linspace(0, 2 * np.pi, 50)
 
-f = Dataset("air.2021.nc", "r", format="NETCDF4")
-level = f.variables["level"][:].copy()
-lats = f.variables["lat"][:].copy()
-lons = f.variables["lon"][:].copy()
-air21 = f.variables["air"][:].copy()
-f.close()
-f = Dataset("hgt.2021.nc", "r", format="NETCDF4")
-time21 = f.variables["time"][:].copy()
-hgt21 = f.variables["hgt"][:].copy()
-f.close()
+x = np.outer(np.sin(u), np.sin(v))
+y = np.outer(np.sin(u), np.cos(v))
+z = np.outer(np.cos(u), np.ones_like(v))
 
 
-f = Dataset("air.2022.nc", "r", format="NETCDF4")
-air22 = f.variables["air"][:].copy()
-f.close()
-f = Dataset("hgt.2022.nc", "r", format="NETCDF4")
-time22 = f.variables["time"][:].copy()
-hgt22 = f.variables["hgt"][:].copy()
-f.close()
+t2 = np.linspace(0.5, 1, 30)
+x2 = abs(t2) * np.sin(t2 ** 3)
+y2 = -abs(t2) * np.cos(2 * t2 ** 3)
+z2 = np.sqrt(1 - x2 ** 2 - y2 ** 2)
 
-# Cambio de coordenadas
+fig = plt.figure()
+ax = plt.axes(projection="3d")
+ax.set_xlim(-3, 3)
+ax.set_ylim(-3, 3)
+ax.set_zlim(-3, 3)
 
-air21[:,:,:,lons >= 180], air21[:,:,:,lons < 180] = air21[:,:,:,lons < 180], air21[:,:,:,lons >= 180]
-air22[:,:,:,lons >= 180], air22[:,:,:,lons < 180] = air22[:,:,:,lons < 180], air22[:,:,:,lons >= 180]
-hgt21[:,:,:,lons >= 180], hgt21[:,:,:,lons < 180] = hgt21[:,:,:,lons < 180], hgt21[:,:,:,lons >= 180]
-hgt22[:,:,:,lons >= 180], hgt22[:,:,:,lons < 180] = hgt22[:,:,:,lons < 180], hgt22[:,:,:,lons >= 180]
+ax.plot_surface(x, y, z, cmap="gist_earth", alpha=0.5, rstride=1, cstride=1)
 
-lons = np.roll(lons, len(lons[lons < 180]))
-lons[lons >= 180] -= 360
+ax.plot(x2, y2, z2, "-b", c="gray", zorder=3)
+ax.scatter(x2, y2, z2 + 0.01, c=x2 + y2, cmap="jet")
 
 
-""" Apartado i) """
+def proj(x, z, z0=1, alpha=1):
+    z0 = z * 0 + z0
+    eps = 1e-16
+    x_trans = x / (abs(z0 - z) ** alpha + eps)
+    return x_trans
 
 
-"""
-Distribución espacial de la temperatura en el nivel de 500hPa, para el primer día
-"""
-cs = plt.contourf(lons, lats, air21[0, 0, :, :], cmap=CMAP, levels=LEV)
-plt.colorbar(cs)
-plt.savefig("1")
+px = proj(x, z, alpha=1 / 2)
+py = proj(y, z, alpha=1 / 2)
+pz = 0 * px - 1
+px2 = proj(x2, z2, alpha=1 / 2)
+py2 = proj(y2, z2, alpha=1 / 2)
+pz2 = 0 * px2 - 1
 
-hgt21b = hgt21[:, level == 500.0, :, :].reshape(len(time21), len(lats) * len(lons))
-n_components = 4
+ax.plot(px2, py2, pz2, "-b", c="gray", zorder=3)
+ax.scatter(px2, py2, pz2, c=x2 + y2, cmap="jet")
 
+ax.set_title("surface")
+plt.show()
+1
 
-Y = hgt21b.transpose()
-pca = PCA(n_components=n_components)
+""" Apartado 2 """
 
-Element_pca0 = pca.fit_transform(Y)
-Element_pca0 = Element_pca0.transpose(1, 0).reshape(n_components, len(lats), len(lons))
-print(pca.explained_variance_ratio_)
+from matplotlib import animation
 
-fig, axs = plt.subplots(nrows=1, ncols=4, figsize=(20, 4))
-fig.tight_layout()
-plt.subplots_adjust(top=0.90)
-for i in range(4):
-    ax = axs[i]
-    ax.set_title("PCA-" + str(i), fontsize=15, ha="center")
-    cs = ax.contourf(lons, lats, Element_pca0[i, :, :], cmap=CMAP, levels=LEV)
-    fig.colorbar(cs, ax=ax)
+def animate(t):
+    xt = proj(x, z) * t + x * (1-t)
+    yt = proj(y, z) * t + y * (1-t)
+    zt = (z * 0) * t + z * (1-t)
+    x2t = proj(x2, z2) * t + x2 * (1-t)
+    y2t = proj(y2, z2) * t + y2 * (1-t)
+    z2t = t + z2 * (1-t)
 
-plt.savefig("2")
-
-
-""" Apartado ii) """
-
-
-dt_time21 = np.array([dt.date(1800, 1, 1) + dt.timedelta(hours=t) for t in time21])
-dt_time22 = np.array([dt.date(1800, 1, 1) + dt.timedelta(hours=t) for t in time22])
-
-lats_logic = np.logical_and(lats > 30, lats < 50)
-lons_logic = np.logical_and(lons > -20, lons < 20)
-
-hgt_sub = hgt21[:, :, lats_logic, :][:, :, :, lons_logic]
-air_sub = air21[:, :, lats_logic, :][:, :, :, lons_logic]
-lats_sub = lats[lats_logic]
-lons_sub = lons[lons_logic]
-
-dia_0 = dt.date(2022, 1, 11)
-hgt_0 = hgt22[dt_time22 == dia_0, :, :, :][0][:, lats_logic, :][:, :, lons_logic]
-air_0 = air22[dt_time22 == dia_0, :, :, :][0][:, lats_logic, :][:, :, lons_logic]
+    ax = plt.axes(projection="3d")
+    ax.set_xlim3d(-3, 3)
+    ax.set_ylim3d(-3, 3)
+    ax.set_zlim3d(-3, 3)
+    ax.plot_surface(
+        xt, yt, zt, rstride=1, cstride=1, alpha=0.5, cmap="viridis", edgecolor="none"
+    )
+    ax.plot(x2t, y2t, z2t, "-b", c="gray")
+    return (ax,)
 
 
-def dist_analogia(u, v):
-    w = u - v
-    a, b, c = w.shape
-    total = 0
-    for i, p in enumerate(level):
-        wk = 0.5 if p == 500.0 or p == 1000.0 else 0
-        if wk == 0:
-            continue
-        for j in range(b):
-            for k in range(c):
-                total += (w[i, j, k] ** 2) * wk
-    return math.sqrt(total)
+def init():
+    return (animate(0),)
 
 
-distancias = [
-    (dist_analogia(hgt_0, hgt_sub[dt_time21 == d, :, :, :][0]), d) for d in dt_time21
-]
-distancias.sort()
-top4 = [d for _, d in distancias[:4]]
-print(top4)
-hgt_1 = sum([hgt_sub[dt_time21==d,:,:,:][0] for d in top4 ])/4
-air_1 = sum([air_sub[dt_time21==d,:,:,:][0] for d in top4 ])/4
+animate(np.arange(0, 1, 0.1)[1])
+plt.show()
 
-
-fig, axs = plt.subplots(nrows=1, ncols=4, figsize=(20, 4))
-fig.tight_layout()
-plt.subplots_adjust(top=0.90)
-
-ax = axs[0]
-ax.set_title("Observación HGT", fontsize=15, ha="center")
-plotted = hgt_0[level==500.,:,:]
-cs = ax.contourf(lons_sub, lats_sub, plotted[0], cmap=CMAP, levels=LEV)
-fig.colorbar(cs, ax=ax)
-
-ax = axs[1]
-ax.set_title("HGT-media", fontsize=15, ha="center")
-plotted = hgt_1[level==500.,:,:]
-cs = ax.contourf(lons_sub, lats_sub, plotted[0], cmap=CMAP, levels=LEV)
-fig.colorbar(cs, ax=ax)
-
-ax = axs[2]
-ax.set_title("Observación AIR", fontsize=15, ha="center")
-plotted = air_0[level==1000.,:,:]
-cs = ax.contourf(lons_sub, lats_sub, plotted[0], cmap=CMAP, levels=LEV)
-fig.colorbar(cs, ax=ax)
-
-ax = axs[3]
-ax.set_title("AIR-media", fontsize=15, ha="center")
-plotted = air_1[level==1000.,:,:]
-cs = plt.contourf(lons_sub, lats_sub, plotted[0], cmap=CMAP, levels=LEV)
-fig.colorbar(cs, ax=ax)
-
-plt.savefig("3")
-
-print(np.array([abs(a) for a in air_1[level==1000.,:,:] - air_0[level==1000.,:,:]]).mean())
+fig = plt.figure(figsize=(6, 6))
+ani = animation.FuncAnimation(
+    fig, animate, np.arange(0, 1, 0.05), init_func=init, interval=20
+)
+ani.save("s.mp4", fps=5)
+# ani.save("ejemplo.gif", fps = 5)
