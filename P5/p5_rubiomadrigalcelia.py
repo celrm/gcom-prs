@@ -39,12 +39,19 @@ def plot_curve(x2, y2, z2, ax=None, lim=3):
     return ax
 
 
-t2 = np.linspace(0.5, 1, 30)
+t2 = np.linspace(0.5, 1, 20)
 x2 = abs(t2) * np.sin(t2 ** 3)
 y2 = -abs(t2) * np.cos(2 * t2 ** 3)
 z2 = np.sqrt(1 - x2 ** 2 - y2 ** 2)
 
 x, y, z = get_sphere(30, 60)
+fig = plt.figure()
+fig.tight_layout()
+ax = Axes3D(fig)
+ax.scatter(x, y, z)
+plt.savefig('0')
+
+
 ax = plot_sphere(x, y, z, alpha=0.66, lim=1.5)
 plot_curve(x2, y2, z2, ax, lim=1 - 5)
 
@@ -79,7 +86,7 @@ def proj2(x, y, z, t):
 def animate(t):
     xt, yt, zt = proj2(x, y, z, t)
     ax = Axes3D(fig)
-    plot_sphere(xt, yt, zt, ax, alpha=1)
+    plot_sphere(xt, yt, zt, ax, alpha=1, lim=2)
     ax.view_init(5, 45)
     return (ax,)
 
