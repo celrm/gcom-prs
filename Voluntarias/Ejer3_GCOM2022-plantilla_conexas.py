@@ -4,10 +4,10 @@ Plantilla
      
 """
 import random
-from turtle import color
 import numpy as np
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString, Point
+from scipy.spatial import ConvexHull
 from matplotlib import cm
 
 # A class to represent a disjoint set
@@ -37,6 +37,20 @@ class DisjointSet:
         else:
             self.parent[x] = y
             self.rank[y] = self.rank[y] + 1
+
+def find_intersections(segments):
+    """
+    Finds the intersections between segments.
+    """
+    intersections = []
+    for i in range(len(segments)):
+        for j in range(i+1, len(segments)):
+            s1 = segments[i]
+            s2 = segments[j]
+            if s1.intersects(s2):
+                intersections.append((i, j))
+    return intersections
+
 
 # ################################ PARTE 1 #####################################
 
@@ -69,42 +83,37 @@ for i in range(len(X)):
     plt.plot(X[i], Y[i], 'b')
 plt.show()
 
-#Comprobamos que podemos seleccionar un par de segmentos:
-
-#Segment A
-PointA1 = Point(X[0][0], Y[0][0])
-PointA2 = Point(X[0][1], Y[0][1])
-#Segment B
-PointB1 = Point(X[1][0], Y[1][0])
-PointB2 = Point(X[1][1], Y[1][1])
-
-SegmentA = LineString([PointA1, PointA2])
-SegmentB = LineString([PointB1, PointB2])
-
-#Y pintamos esos segmentos seleccionados para ver donde están
-
-for i in range(len(X)):
-    plt.plot(X[i], Y[i], 'b')
-
-plt.plot(*SegmentA.xy, color="red")
-plt.plot(*SegmentB.xy, color="red")
-plt.show()
-
 segments = [ LineString([Point(X[s][0], Y[s][0]), Point(X[s][1], Y[s][1])]) for s in range(len(X)) ]
 
 ds = DisjointSet()
 ds.makeSet(range(len(X)))
-for i in range(len(X)):
-    for j in range(len(X)):
-        if segments[i].intersects(segments[j]):
-            ds.Union(i,j)
+for i,j in find_intersections(segments):
+    ds.Union(i, j)
 
-n_comps = len( set([ ds.Find(i) for i in range(len(X)) ]) )
+unique_segments_index = set([ ds.Find(i) for i in range(len(X)) ])
+n_comps = len(unique_segments_index)
 print(n_comps)
+
+points_hull = { i:[] for i in unique_segments_index }
+for i in range(len(X)):
+    px, py = segments[i].xy
+    points_hull[ds.Find(i)] += [[px[0], py[0]], [px[1], py[1]]]
 
 
 colours = cm.rainbow(np.linspace(0, 1, len(X)))
 for i in range(len(X)):
     plt.plot(*segments[i].xy, color=colours[ds.Find(i)])
+# plt.show()
+# 1
+
+colours = cm.rainbow(np.linspace(0, 1, len(X)))
+for i in unique_segments_index:
+    points = np.array(points_hull[i])
+    if len(points) < 3:
+        continue
+    hull = ConvexHull(points)
+    plt.plot(points[hull.vertices, 0], points[hull.vertices, 1], 'o', mec='r', color='none', lw=1, markersize=10)
+    break
+
 plt.show()
 1
