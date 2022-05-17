@@ -14,6 +14,7 @@ from matplotlib import cm
 class DisjointSet:
     parent = {}
     rank = {}
+
     def makeSet(self, universe):
         for i in universe:
             self.parent[i] = i
@@ -38,13 +39,14 @@ class DisjointSet:
             self.parent[x] = y
             self.rank[y] = self.rank[y] + 1
 
+
 def find_intersections(segments):
     """
     Finds the intersections between segments.
     """
     intersections = []
     for i in range(len(segments)):
-        for j in range(i+1, len(segments)):
+        for j in range(i + 1, len(segments)):
             s1 = segments[i]
             s2 = segments[j]
             if s1.intersects(s2):
@@ -52,23 +54,42 @@ def find_intersections(segments):
     return intersections
 
 
+def connected_components(xy=None, segments=None):
+    """
+    Finds the connected components of a system.
+    """
+    if xy is None and segments is None:
+        return ()
+    if segments is None:
+        segments = [ LineString(
+                [Point(xy[0][s][0], xy[1][s][0]), Point(xy[0][s][1], xy[1][s][1])]
+            ) for s in range(len(xy[0])) ]
+
+    ds = DisjointSet()
+    ds.makeSet(range(len(segments)))
+    all_intersections = find_intersections(segments)
+    for i, j in all_intersections:
+        ds.Union(i, j)
+    return len(ds.parent), ds, segments
+
+
 # ################################ PARTE 1 #####################################
 
-#Generamos 1000 segmentos aleatorios, pero siempre serán los mismos
+# Generamos 1000 segmentos aleatorios, pero siempre serán los mismos
 
-#Usaremos primero el concepto de coordenadas
+# Usaremos primero el concepto de coordenadas
 X = []
 Y = []
 
-#Fijamos el modo aleatorio con una versión prefijada. NO MODIFICAR!!
+# Fijamos el modo aleatorio con una versión prefijada. NO MODIFICAR!!
 random.seed(a=1, version=2)
 
-#Generamos subconjuntos cuadrados del plano R2 para determinar los rangos de X e Y
+# Generamos subconjuntos cuadrados del plano R2 para determinar los rangos de X e Y
 xrango1 = random.sample(range(100, 1000), 200)
 xrango2 = list(np.add(xrango1, random.sample(range(10, 230), 200)))
 yrango1 = random.sample(range(100, 950), 200)
 yrango2 = list(np.add(yrango1, random.sample(range(10, 275), 200)))
-        
+
 for j in range(len(xrango1)):
     for i in range(5):
         random.seed(a=i, version=2)
@@ -77,43 +98,37 @@ for j in range(len(xrango1)):
         X.append(xrandomlist[0:2])
         Y.append(yrandomlist[2:4])
 
-#Representamos el Espacio topológico representado por los 1000 segmentos
-        
+# Representamos el Espacio topológico representado por los 1000 segmentos
 for i in range(len(X)):
-    plt.plot(X[i], Y[i], 'b')
-plt.show()
+    plt.plot(X[i], Y[i], "b")
+plt.savefig("1")
 
-segments = [ LineString([Point(X[s][0], Y[s][0]), Point(X[s][1], Y[s][1])]) for s in range(len(X)) ]
+n_comp, ds, segments = connected_components(xy=(X, Y))
 
-ds = DisjointSet()
-ds.makeSet(range(len(X)))
-for i,j in find_intersections(segments):
-    ds.Union(i, j)
+# Coloreamos los segmentos conexos del mismo color
+colours = cm.rainbow(np.linspace(0, 1, len(X)))
+for i in range(len(X)):
+    plt.plot(*segments[i].xy, color=colours[ds.Find(i)])
+plt.savefig("2")
 
-unique_segments_index = set([ ds.Find(i) for i in range(len(X)) ])
-n_comps = len(unique_segments_index)
-print(n_comps)
-
-points_hull = { i:[] for i in unique_segments_index }
+points_hull = {i: [] for i in ds.parent}
 for i in range(len(X)):
     px, py = segments[i].xy
     points_hull[ds.Find(i)] += [[px[0], py[0]], [px[1], py[1]]]
 
-
-colours = cm.rainbow(np.linspace(0, 1, len(X)))
-for i in range(len(X)):
-    plt.plot(*segments[i].xy, color=colours[ds.Find(i)])
-# plt.show()
-# 1
-
-colours = cm.rainbow(np.linspace(0, 1, len(X)))
-for i in unique_segments_index:
+for i in ds.parent:
     points = np.array(points_hull[i])
     if len(points) < 3:
         continue
     hull = ConvexHull(points)
-    plt.plot(points[hull.vertices, 0], points[hull.vertices, 1], 'o', mec='r', color='none', lw=1, markersize=10)
-    break
+    plt.plot(
+        points[hull.vertices, 0],
+        points[hull.vertices, 1],
+        "o",
+        mec="r",
+        color="none",
+        lw=1,
+        markersize=10,
+    )
 
-plt.show()
-1
+plt.savefig("3")
